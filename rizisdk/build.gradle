@@ -1,6 +1,7 @@
 plugins {
     //alias(libs.plugins.android.libra)
     id 'com.android.library'
+    id 'maven-publish'
 }
 
 android {
@@ -27,6 +28,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
+    // Expose a sources JAR for the release variant so consumers on JitPack
+    // get sources alongside the AAR.
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
@@ -36,4 +45,17 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            // JitPack will supply -Pgroup and -Pversion. We deliberately
+            // do not hardcode groupId/version here. The artifactId defaults
+            // to the module name (rizisdk).
+            release(MavenPublication) {
+                from components.release
+            }
+        }
+    }
 }
